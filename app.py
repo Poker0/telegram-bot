@@ -30,28 +30,24 @@ def remove_links_and_at_text(input_pdf, output_pdf):
     for page in doc:
         text_instances = []
         links = page.get_links()
-
         for link in links:
             uri = link.get("uri", "")
             if any(pattern in uri for pattern in patterns):
                 if "from" in link:
                     rect = fitz.Rect(link["from"])
                     text_instances.append(rect)
-
         text_blocks = page.get_text("blocks")
         for block in text_blocks:
             text = block[4]
             if "@" in text:
                 rect = fitz.Rect(block[:4])
                 text_instances.append(rect)
-
         for rect in text_instances:
             page.add_redact_annot(rect)
             page.apply_redactions()
-
+    logger.info("Links and @ text removed successfully")  # لاگ جدید
     doc.save(output_pdf, garbage=4, deflate=True)
     doc.close()
-    logger.info("Links and @ text removed successfully")
 
 # اضافه کردن سربرگ با لینک کلیک‌پذیر
 def add_watermark_text(input_pdf, output_pdf, watermark_text="Romandl", link="https://t.me/romandl"):
@@ -63,12 +59,10 @@ def add_watermark_text(input_pdf, output_pdf, watermark_text="Romandl", link="ht
         for inst in text_instances:
             page.add_redact_annot(inst)
             page.apply_redactions()
-
         text_position = fitz.Point(50, 750)
         page.insert_text(text_position, watermark_text, fontsize=18, color=(1, 0, 0))
         link_rect = fitz.Rect(50, 745, 150, 765)
         page.insert_link({"kind": fitz.LINK_URI, "from": link_rect, "uri": link})
-
     doc.save(output_pdf)
     doc.close()
     logger.info("Watermark added successfully")
@@ -112,7 +106,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     context.user_data['action'] = query.data
     logger.info(f"Button clicked: {query.data}")
-
     messages = {
         "remove_watermark": "📌 لطفاً فایل PDF را ارسال کنید تا واترمارک حذف شود.",
         "remove_links": "📌 لطفاً فایل PDF را ارسال کنید تا لینک‌ها و متن‌های @ حذف شوند.",
